@@ -70,7 +70,7 @@ class AuthController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Wrong username and/or password',
-                ], 400);
+                ], 401);
             }
 
             $user = Auth::user();

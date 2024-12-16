@@ -27,8 +27,8 @@ export default function Register() {
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({
-    username: [],
-    email: [],
+    username: "",
+    email: "",
     password: [],
   });
 
@@ -48,7 +48,7 @@ export default function Register() {
         if (err.response?.status == 400) {
           setErrors(err.response?.data?.errors);
         } else {
-          toast.error("Something went wrong.please try again!");
+          toast.error("Something went wrong! Please try again.");
         }
       });
   };
@@ -73,7 +73,7 @@ export default function Register() {
                     setAuthState({ ...authState, username: e.target.value })
                   }
                 />
-                <span className="text-red-500">{errors.username?.[0]}</span>
+                <span className="text-red-500">{errors.username}</span>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="email">Email</Label>
@@ -86,7 +86,7 @@ export default function Register() {
                     setAuthState({ ...authState, email: e.target.value })
                   }
                 />
-                <span className="text-red-500">{errors.email?.[0]}</span>
+                <span className="text-red-500">{errors.email}</span>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="password">Password</Label>
@@ -115,6 +115,7 @@ export default function Register() {
                     });
                   }}
                 />
+                <span className="text-red-500">{errors.password?.[1]}</span>
               </div>
               <div className="mt-2">
                 <Button className="w-full" disabled={loading}>

@@ -25,8 +25,8 @@ export default function Login() {
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({
-    username: [],
-    password: [],
+    username: "",
+    password: "",
   });
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -44,8 +44,10 @@ export default function Login() {
 
         if (err.response?.status == 400) {
           setErrors(err.response?.data?.errors);
+        } else if (err.response?.status == 401) {
+          toast.error(err.response?.data?.message);
         } else {
-          toast.error("Something went wrong.please try again!");
+          toast.error("Something went wrong! Please try again.");
         }
       });
   };
@@ -63,14 +65,14 @@ export default function Login() {
                 <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
-                  type="username"
+                  type="text"
                   placeholder="Enter your username"
                   value={authState.username}
                   onChange={(e) =>
                     setAuthState({ ...authState, username: e.target.value })
                   }
                 />
-                <span className="text-red-500">{errors.username?.[0]}</span>
+                <span className="text-red-500">{errors.username}</span>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="password">Password</Label>
@@ -83,7 +85,7 @@ export default function Login() {
                     setAuthState({ ...authState, password: e.target.value });
                   }}
                 />
-                <span className="text-red-500">{errors.password?.[0]}</span>
+                <span className="text-red-500">{errors.password}</span>
               </div>
               <div className="mt-2">
                 <Button className="w-full" disabled={loading}>
