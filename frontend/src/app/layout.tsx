@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const nunito = Nunito({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -14,7 +17,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={nunito.className}>{children}</body>
+      <body className={nunito.className}>
+        <ToastContainer />
+        {children}
+      </body>
     </html>
   );
 }

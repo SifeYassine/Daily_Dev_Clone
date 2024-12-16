@@ -13,6 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 
+import axios from "@/lib/axios.config";
+import { REGISTER_URL } from "@/lib/apiEndPoints";
+import { toast } from "react-toastify";
+
 export default function Register() {
   const [authState, setAuthState] = useState({
     username: "",
@@ -22,6 +26,32 @@ export default function Register() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    username: [],
+    email: [],
+    password: [],
+  });
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setLoading(true);
+    axios
+      .post(REGISTER_URL, authState)
+      .then((res) => {
+        setLoading(false);
+        const response = res.data;
+        toast.success(response.message);
+      })
+      .catch((err) => {
+        setLoading(false);
+
+        if (err.response?.status == 400) {
+          setErrors(err.response?.data?.errors);
+        } else {
+          toast.error("Something went wrong.please try again!");
+        }
+      });
+  };
   return (
     <div>
       <TabsContent value="register">
@@ -31,7 +61,7 @@ export default function Register() {
             <CardDescription>Welcom to Daily.dev</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <form action="">
+            <form onSubmit={handleSubmit}>
               <div className="space-y-1">
                 <Label htmlFor="username">Username</Label>
                 <Input
@@ -43,6 +73,7 @@ export default function Register() {
                     setAuthState({ ...authState, username: e.target.value })
                   }
                 />
+                <span className="text-red-500">{errors.username?.[0]}</span>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="email">Email</Label>
@@ -55,6 +86,7 @@ export default function Register() {
                     setAuthState({ ...authState, email: e.target.value })
                   }
                 />
+                <span className="text-red-500">{errors.email?.[0]}</span>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="password">Password</Label>
@@ -67,6 +99,7 @@ export default function Register() {
                     setAuthState({ ...authState, password: e.target.value });
                   }}
                 />
+                <span className="text-red-500">{errors.password?.[0]}</span>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="password_confirm">Confirm Password</Label>

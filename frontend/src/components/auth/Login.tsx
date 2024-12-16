@@ -13,13 +13,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 
+import axios from "@/lib/axios.config";
+import { LOGIN_URL } from "@/lib/apiEndPoints";
+import { toast } from "react-toastify";
+
 export default function Login() {
   const [authState, setAuthState] = useState({
-    email: "",
+    username: "",
     password: "",
   });
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    username: [],
+    password: [],
+  });
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setLoading(true);
+    axios
+      .post(LOGIN_URL, authState)
+      .then((res) => {
+        setLoading(false);
+        const response = res.data;
+        toast.success(response.message);
+      })
+      .catch((err) => {
+        setLoading(false);
+
+        if (err.response?.status == 400) {
+          setErrors(err.response?.data?.errors);
+        } else {
+          toast.error("Something went wrong.please try again!");
+        }
+      });
+  };
   return (
     <div>
       <TabsContent value="login">
@@ -29,18 +58,19 @@ export default function Login() {
             <CardDescription>Welcom back to Daily.dev</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <form action="">
+            <form onSubmit={handleSubmit}>
               <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={authState.email}
+                  id="username"
+                  type="username"
+                  placeholder="Enter your username"
+                  value={authState.username}
                   onChange={(e) =>
-                    setAuthState({ ...authState, email: e.target.value })
+                    setAuthState({ ...authState, username: e.target.value })
                   }
                 />
+                <span className="text-red-500">{errors.username?.[0]}</span>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="password">Password</Label>
@@ -53,6 +83,7 @@ export default function Login() {
                     setAuthState({ ...authState, password: e.target.value });
                   }}
                 />
+                <span className="text-red-500">{errors.password?.[0]}</span>
               </div>
               <div className="mt-2">
                 <Button className="w-full" disabled={loading}>
