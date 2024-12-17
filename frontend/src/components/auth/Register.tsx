@@ -35,18 +35,23 @@ export default function Register() {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
+
     axios
       .post(REGISTER_URL, authState)
       .then((res) => {
         setLoading(false);
         const response = res.data;
-        toast.success(response.message);
+
+        if (res?.status == 200) {
+          toast.success(response.message);
+        }
       })
       .catch((err) => {
         setLoading(false);
+        const errors = err.response.data;
 
-        if (err.response?.status == 400) {
-          setErrors(err.response?.data?.errors);
+        if (err?.status == 400) {
+          setErrors(errors.errors);
         } else {
           toast.error("Something went wrong! Please try again.");
         }

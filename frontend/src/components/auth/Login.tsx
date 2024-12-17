@@ -15,6 +15,7 @@ import { TabsContent } from "@/components/ui/tabs";
 
 import axios from "@/lib/axios.config";
 import { LOGIN_URL } from "@/lib/apiEndPoints";
+import { signIn } from "next-auth/react";
 import { toast } from "react-toastify";
 
 export default function Login() {
@@ -32,20 +33,32 @@ export default function Login() {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
+
     axios
       .post(LOGIN_URL, authState)
       .then((res) => {
         setLoading(false);
         const response = res.data;
-        toast.success(response.message);
+
+        if (res?.status == 200) {
+          signIn("credentials", {
+            username: authState.username,
+            password: authState.password,
+            redirect: true,
+            callbackUrl: "/",
+          });
+
+          toast.success(response.message);
+        }
       })
       .catch((err) => {
         setLoading(false);
+        const errors = err.response.data;
 
-        if (err.response?.status == 400) {
-          setErrors(err.response?.data?.errors);
-        } else if (err.response?.status == 401) {
-          toast.error(err.response?.data?.message);
+        if (err?.status == 400) {
+          setErrors(errors.errors);
+        } else if (err?.status == 401) {
+          toast.error(errors.message);
         } else {
           toast.error("Something went wrong! Please try again.");
         }

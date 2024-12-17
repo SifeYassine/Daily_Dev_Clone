@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AuthProvider from "@/providers/AuthProvider";
 
 const nunito = Nunito({ subsets: ["latin"] });
 
@@ -19,7 +20,7 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={nunito.className}>
         <ToastContainer />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

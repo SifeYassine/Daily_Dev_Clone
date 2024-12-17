@@ -24,7 +24,7 @@ class AuthController extends Controller
 
             if ($validateUser->fails()) {
                 return response()->json([
-                    'status' => false,
+                    'status' => 400,
                     'message' => 'Validation error',
                     'errors' => $validateUser->errors()
                 ], 400);
@@ -38,12 +38,13 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                'status' => true,
+                'status' => 200,
                 'message' => 'User registered successfully',
                 'user' => $user
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
+                'status' => 500,
                 'message' => $th->getMessage()
             ], 500);
         }
@@ -60,7 +61,7 @@ class AuthController extends Controller
 
             if ($validateUser->fails()) {
                 return response()->json([
-                    'status' => false,
+                    'status' => 400,
                     'message' => 'Validation error',
                     'errors' => $validateUser->errors()
                 ], 400);
@@ -68,7 +69,7 @@ class AuthController extends Controller
 
             if (!Auth::attempt($request->only(['username', 'password']))) {
                 return response()->json([
-                    'status' => false,
+                    'status' => 401,
                     'message' => 'Wrong username and/or password',
                 ], 401);
             }
@@ -77,7 +78,7 @@ class AuthController extends Controller
             $token = $user->createToken('token')->plainTextToken;
 
             return response()->json([
-                'status' => true,
+                'status' => 200,
                 'message' => 'User logged in successfully',
                 'user' => $user,
                 'access_token' => $token,
@@ -85,6 +86,7 @@ class AuthController extends Controller
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
+                'status' => 500,
                 'message' => $th->getMessage()
             ], 500);
         }
@@ -96,7 +98,7 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'status' => true,
+            'status' => 200,
             'message' => 'User logged out successfully',
         ], 200);
     }
