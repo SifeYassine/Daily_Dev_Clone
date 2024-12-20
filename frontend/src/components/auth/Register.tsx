@@ -32,7 +32,7 @@ export default function Register() {
     password: [],
   });
 
-  const handleSubmit = (event: React.FormEvent) => {
+  function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setLoading(true);
 
@@ -56,7 +56,7 @@ export default function Register() {
           toast.error("Something went wrong! Please try again.");
         }
       });
-  };
+  }
   return (
     <div>
       <TabsContent value="register">

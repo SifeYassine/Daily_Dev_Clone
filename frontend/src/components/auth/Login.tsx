@@ -30,7 +30,7 @@ export default function Login() {
     password: "",
   });
 
-  const handleSubmit = (event: React.FormEvent) => {
+  function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setLoading(true);
 
@@ -63,7 +63,7 @@ export default function Login() {
           toast.error("Something went wrong! Please try again.");
         }
       });
-  };
+  }
   return (
     <div>
       <TabsContent value="login">

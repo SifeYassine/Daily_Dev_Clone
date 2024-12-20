@@ -76,13 +76,33 @@ class AuthController extends Controller
 
             $user = Auth::user();
             $token = $user->createToken('token')->plainTextToken;
-
+    
+            // Convert user to array and append token details
+            $userWithToken = collect($user)->merge([
+                'token' =>  $token,
+            ]);
+    
             return response()->json([
                 'status' => 200,
                 'message' => 'User logged in successfully',
-                'user' => $user,
-                'access_token' => $token,
-                'token_type' => 'Bearer',
+                'user' => $userWithToken,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 500,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    // Get logged in user
+    public function user(Request $request)
+    {
+        try {
+            return response()->json([
+                'status' => 200,
+                'message' => 'User retrieved successfully',
+                'user' => $request->user()
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -95,11 +115,17 @@ class AuthController extends Controller
     // Logout user
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json([
-            'status' => 200,
-            'message' => 'User logged out successfully',
-        ], 200);
+        try {
+            $request->user()->currentAccessToken()->delete();
+            return response()->json([
+                'status' => 200,
+                'message' => 'User logged out successfully',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 500,
+                'message' => $th->getMessage()
+            ], 500);
+        }
     }
 }
