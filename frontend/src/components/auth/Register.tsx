@@ -16,6 +16,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import axios from "@/lib/axios.config";
 import { REGISTER_URL } from "@/lib/apiEndPoints";
 import { toast } from "react-toastify";
+import { signIn } from "next-auth/react";
 
 export default function Register() {
   const [authState, setAuthState] = useState({
@@ -44,6 +45,13 @@ export default function Register() {
 
         if (res?.status == 200) {
           toast.success(response.message);
+
+          signIn("credentials", {
+            username: authState.username,
+            password: authState.password,
+            redirect: true,
+            callbackUrl: "/",
+          });
         }
       })
       .catch((err) => {

@@ -5,9 +5,8 @@ import { BellIcon } from "lucide-react";
 import ProfileMenu from "./ProfileMenu";
 import SearchInput from "./SearchInput";
 import MobileSideBar from "./MobileSideBar";
-import { CustomUser } from "@/app/api/auth/[...nextauth]/authOptions";
 
-export default function NavBar({ user }: { user: CustomUser }) {
+export default function NavBar() {
   return (
     <nav className="flex justify-between items-center p-2 border-b">
       <MobileSideBar />
@@ -20,7 +19,7 @@ export default function NavBar({ user }: { user: CustomUser }) {
           <BellIcon className="w-5 h-5" />
         </Button>
 
-        <ProfileMenu user={user} />
+        <ProfileMenu />
       </div>
     </nav>
   );

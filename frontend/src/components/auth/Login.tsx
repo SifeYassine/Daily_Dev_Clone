@@ -41,14 +41,14 @@ export default function Login() {
         const response = res.data;
 
         if (res?.status == 200) {
+          toast.success(response.message);
+
           signIn("credentials", {
             username: authState.username,
             password: authState.password,
             redirect: true,
             callbackUrl: "/",
           });
-
-          toast.success(response.message);
         }
       })
       .catch((err) => {
