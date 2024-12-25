@@ -77,3 +77,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+.custom-scrollbar {
+  @apply overflow-y-scroll
+         [&::-webkit-scrollbar]:w-2
+         [&::-webkit-scrollbar-track]:bg-transparent
+         [&::-webkit-scrollbar-thumb]:bg-transparent
+         [&::-webkit-scrollbar-thumb]:rounded-sm
+         [&::-webkit-scrollbar-thumb]:transition-colors;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  @apply bg-gray-500/50;
+}

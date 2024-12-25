@@ -9,7 +9,7 @@ export default async function DailyDevLayout({
       <NavBar />
       <div className="flex">
         <SideBar />
-        <div className="flex justify-center items-center w-full overflow-y-scroll ">
+        <div className="flex justify-center items-center w-full custom-scrollbar">
           {children}
         </div>
       </div>

@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 
-import axios from "@/lib/axios.config";
+import myAxios from "@/lib/axios.config";
 import { REGISTER_URL } from "@/lib/apiEndPoints";
 import { toast } from "react-toastify";
 import { signIn } from "next-auth/react";
@@ -37,7 +37,7 @@ export default function Register() {
     event.preventDefault();
     setLoading(true);
 
-    axios
+    myAxios
       .post(REGISTER_URL, authState)
       .then((res) => {
         setLoading(false);

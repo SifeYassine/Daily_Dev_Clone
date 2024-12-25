@@ -32,7 +32,6 @@ import { toast } from "react-toastify";
 import { signOut } from "next-auth/react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { profile } from "console";
 
 export default function ProfileMenu() {
   const [logoutOpen, setLogoutOpen] = useState(false);

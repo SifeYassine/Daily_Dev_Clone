@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 
-import axios from "@/lib/axios.config";
+import myAxios from "@/lib/axios.config";
 import { LOGIN_URL } from "@/lib/apiEndPoints";
 import { signIn } from "next-auth/react";
 import { toast } from "react-toastify";
@@ -34,7 +34,7 @@ export default function Login() {
     event.preventDefault();
     setLoading(true);
 
-    axios
+    myAxios
       .post(LOGIN_URL, authState)
       .then((res) => {
         setLoading(false);

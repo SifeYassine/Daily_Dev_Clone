@@ -9,3 +9,12 @@ export function cn(...inputs: ClassValue[]) {
 export function getImageUrl(image: string) {
   return `${Env.API_URL}/storage/${image}`;
 }
+
+export function isValidUrl(url: string) {
+  try {
+    new URL(url);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
