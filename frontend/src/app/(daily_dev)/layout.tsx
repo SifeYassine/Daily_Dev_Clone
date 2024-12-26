@@ -5,13 +5,11 @@ export default async function DailyDevLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="h-screen overflow-y-hidden">
+    <div className="h-screen flex flex-col">
       <NavBar />
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         <SideBar />
-        <div className="flex justify-center items-center w-full custom-scrollbar">
-          {children}
-        </div>
+        <div className="flex-1 custom-scrollbar">{children}</div>
       </div>
     </div>
   );

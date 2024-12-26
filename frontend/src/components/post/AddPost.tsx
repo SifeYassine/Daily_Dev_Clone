@@ -20,8 +20,10 @@ import { toast } from "react-toastify";
 import { POST_URL } from "@/lib/apiEndPoints";
 import { CustomUser } from "@/app/api/auth/[...nextauth]/authOptions";
 import { useSession } from "next-auth/react";
+import { usePosts } from "@/context/PostsContext";
 
 export default function AddPost() {
+  const { addPost } = usePosts();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [postState, setPostState] = useState<PostStateType>({
@@ -81,6 +83,8 @@ export default function AddPost() {
           toast.success(response.message);
           setPostState({});
           setOpen(false);
+
+          addPost(response.post);
         }
       })
       .catch((err) => {
