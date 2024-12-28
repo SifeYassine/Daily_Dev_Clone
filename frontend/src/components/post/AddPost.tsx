@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import Image from "next/image";
 
@@ -20,10 +22,8 @@ import { toast } from "react-toastify";
 import { POST_URL } from "@/lib/apiEndPoints";
 import { CustomUser } from "@/app/api/auth/[...nextauth]/authOptions";
 import { useSession } from "next-auth/react";
-import { usePosts } from "@/context/PostsContext";
 
 export default function AddPost() {
-  const { addPost } = usePosts();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [postState, setPostState] = useState<PostStateType>({
@@ -43,63 +43,72 @@ export default function AddPost() {
   const { data } = useSession();
   const user = data?.user as CustomUser;
 
-  async function loadPreview() {
-    if (isValidUrl(postState.url!)) {
+  async function handlePreviewAndSubmit(
+    event?: React.FormEvent,
+    type: "preview" | "submit" = "preview"
+  ) {
+    if (type === "preview" && isValidUrl(postState.url!)) {
       setLoading(true);
-      axios
-        .post("/api/image-preview", { url: postState.url })
-        .then((res) => {
-          setLoading(false);
-          const response: ImagePreviewResType = res.data?.data;
-          const image =
-            response.images.length > 0 ? response.images[0] : "/computer.jpg";
+      try {
+        const res = await axios.post("/api/image-preview", {
+          url: postState.url,
+        });
+        const response = res.data?.data as ImagePreviewResType;
+        const image =
+          response.images.length > 0 ? response.images[0] : "/computer.jpg";
+
+        setPostState({
+          ...postState,
+          image_url: image,
+          title: response.title,
+          description: response.description ?? "",
+        });
+      } catch {
+        toast.error("Something went wrong while fetching data from URL.", {
+          theme: "dark",
+        });
+      } finally {
+        setLoading(false);
+      }
+    } else if (type === "submit") {
+      event?.preventDefault();
+      setLoading(true);
+
+      try {
+        const res = await myAxios.post(`${POST_URL}/create`, postState, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        const response = res.data;
+
+        if (res?.status === 200) {
+          toast.success(response.message, { theme: "dark" });
 
           setPostState({
-            ...postState,
-            image_url: image,
-            title: response.title,
-            description: response.description ?? "",
+            title: "",
+            description: "",
+            url: "",
+            image_url: "",
           });
-        })
-        .catch((err) => {
-          setLoading(false);
-          toast.error("Something went wrong while fetch data from URL.");
-        });
+          setOpen(false);
+        }
+      } catch (err: any) {
+        const errors = err.response?.data;
+
+        console.log("errors", err);
+
+        if (err?.status === 400) {
+          setErrors(errors.errors);
+        } else {
+          toast.error("Something went wrong! Please try again.", {
+            theme: "dark",
+          });
+        }
+      } finally {
+        setLoading(false);
+      }
     }
   }
 
-  function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setLoading(true);
-
-    myAxios
-      .post(`${POST_URL}/create`, postState, {
-        headers: { Authorization: `Bearer ${user.token}` },
-      })
-      .then((res) => {
-        setLoading(false);
-        const response = res.data;
-        if (res?.status == 200) {
-          toast.success(response.message);
-          setPostState({});
-          setOpen(false);
-
-          addPost(response.post);
-        }
-      })
-      .catch((err) => {
-        setLoading(false);
-        const errors = err.response.data;
-
-        console.log("errors", errors);
-
-        if (err?.status == 400) {
-          setErrors(errors.errors);
-        } else {
-          toast.error("Something went wrong! Please try again.");
-        }
-      });
-  }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -118,7 +127,7 @@ export default function AddPost() {
         <DialogHeader>
           <DialogTitle>Add Post</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => handlePreviewAndSubmit(e, "submit")}>
           {postState.image_url && (
             <Image
               src={postState.image_url}
@@ -129,7 +138,7 @@ export default function AddPost() {
             />
           )}
           <div className="mb-4">
-            <Label htmlFor="limk">Link</Label>
+            <Label htmlFor="link">Link</Label>
             <Input
               id="link"
               type="url"
@@ -138,9 +147,23 @@ export default function AddPost() {
               onChange={(e) =>
                 setPostState({ ...postState, url: e.target.value })
               }
-              onBlur={loadPreview}
+              onBlur={() => handlePreviewAndSubmit(undefined, "preview")}
             />
             <span className="text-red-500">{errors.url}</span>
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="img">Image Link</Label>
+            <Input
+              id="img"
+              type="url"
+              placeholder="Enter image link..."
+              value={postState.image_url}
+              onChange={(e) =>
+                setPostState({ ...postState, image_url: e.target.value })
+              }
+              onBlur={() => handlePreviewAndSubmit(undefined, "preview")}
+            />
+            <span className="text-red-500">{errors.image_url}</span>
           </div>
           <div className="mb-4">
             <Label htmlFor="title">Title</Label>

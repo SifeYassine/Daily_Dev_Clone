@@ -30,48 +30,52 @@ export default function Register() {
   const [errors, setErrors] = useState({
     username: "",
     email: "",
-    password: [],
+    password: "",
+    password_confirmation: "",
   });
+
+  async function handleAuth() {
+    setLoading(true);
+    try {
+      const res = await myAxios.post(REGISTER_URL, authState);
+      const response = res.data;
+
+      if (res?.status === 200) {
+        toast.success(response.message, { theme: "dark" });
+        signIn("credentials", {
+          username: authState.username,
+          password: authState.password,
+          redirect: true,
+          callbackUrl: "/",
+        });
+      }
+    } catch (err: any) {
+      const errors = err.response?.data;
+
+      if (err.response?.status === 400) {
+        setErrors(errors.errors);
+      } else {
+        toast.error("Something went wrong! Please try again.", {
+          theme: "dark",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    setLoading(true);
-
-    myAxios
-      .post(REGISTER_URL, authState)
-      .then((res) => {
-        setLoading(false);
-        const response = res.data;
-
-        if (res?.status == 200) {
-          toast.success(response.message);
-
-          signIn("credentials", {
-            username: authState.username,
-            password: authState.password,
-            redirect: true,
-            callbackUrl: "/",
-          });
-        }
-      })
-      .catch((err) => {
-        setLoading(false);
-        const errors = err.response.data;
-
-        if (err?.status == 400) {
-          setErrors(errors.errors);
-        } else {
-          toast.error("Something went wrong! Please try again.");
-        }
-      });
+    handleAuth();
   }
+
   return (
     <div>
       <TabsContent value="register">
         <Card>
           <CardHeader>
             <CardTitle>Register</CardTitle>
-            <CardDescription>Welcom to Daily.dev</CardDescription>
+            <CardDescription>Welcome to Daily.dev</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <form onSubmit={handleSubmit}>
@@ -108,11 +112,11 @@ export default function Register() {
                   type="password"
                   placeholder="Enter your password"
                   value={authState.password}
-                  onChange={(e) => {
-                    setAuthState({ ...authState, password: e.target.value });
-                  }}
+                  onChange={(e) =>
+                    setAuthState({ ...authState, password: e.target.value })
+                  }
                 />
-                <span className="text-red-500">{errors.password?.[0]}</span>
+                <span className="text-red-500">{errors.password}</span>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="password_confirm">Confirm Password</Label>
@@ -121,14 +125,16 @@ export default function Register() {
                   type="password"
                   placeholder="Confirm your password"
                   value={authState.password_confirmation}
-                  onChange={(e) => {
+                  onChange={(e) =>
                     setAuthState({
                       ...authState,
                       password_confirmation: e.target.value,
-                    });
-                  }}
+                    })
+                  }
                 />
-                <span className="text-red-500">{errors.password?.[1]}</span>
+                <span className="text-red-500">
+                  {errors.password_confirmation}
+                </span>
               </div>
               <div className="mt-2">
                 <Button className="w-full" disabled={loading}>

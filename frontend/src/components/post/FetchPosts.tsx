@@ -1,43 +1,84 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePosts } from "@/context/PostsContext";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Image from "next/image";
+import { ArrowBigUp, Link as LinkIcon, MessageSquare } from "lucide-react";
+import UserAvatar from "@/components/common/UserAvatar";
 import myAxios from "@/lib/axios.config";
 import { POST_URL } from "@/lib/apiEndPoints";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
-import Link from "next/link";
 import { CustomUser } from "@/app/api/auth/[...nextauth]/authOptions";
+import { formatDate } from "@/lib/utils";
+import { laraEcho } from "@/lib/echo.config";
 
 export default function FetchPosts() {
-  const { posts, setPosts } = usePosts();
+  const [posts, setPosts] = useState<PostType[]>([]);
   const [loading, setLoading] = useState(true);
   const { data } = useSession();
   const user = data?.user as CustomUser;
 
   useEffect(() => {
-    if (user?.token && posts.length === 0) {
+    if (user) {
+      // Fetch posts when user is logged in
       setLoading(true);
-      myAxios
-        .get(`${POST_URL}/index`, {
-          headers: { Authorization: `Bearer ${user.token}` },
-        })
-        .then((res) => {
-          setLoading(false);
+      async function fetchPosts() {
+        try {
+          const res = await myAxios.get(`${POST_URL}/index`, {
+            headers: { Authorization: `Bearer ${user.token}` },
+          });
           const response = res.data;
-          if (res?.status === 200) {
+
+          if (res.status === 200) {
             setPosts(response.posts.data);
           }
-        })
-        .catch(() => {
+        } catch {
+          toast.error("Something went wrong! Please try again.", {
+            theme: "dark",
+          });
+        } finally {
           setLoading(false);
-          toast.error("Something went wrong! Please try again.");
-        });
+        }
+      }
+
+      fetchPosts();
+
+      // Listen for real-time updates
+      const channel = laraEcho.channel("post-broadcast");
+
+      channel.listen("PostBroadCastEvent", (event: any) => {
+        const post = event?.post as PostType;
+        setPosts((prevPosts) => [post, ...prevPosts]);
+      });
+
+      laraEcho.connector.pusher.connection.bind("connected", () => {
+        console.log("Connected to Reverb server!");
+      });
+
+      laraEcho.connector.pusher.connection.bind("error", (err: any) => {
+        console.error("Connection Error:", err);
+      });
+
+      // Leave the channel on unmount
+      return () => {
+        laraEcho.leaveChannel("post-broadcast");
+      };
     } else {
       setLoading(false);
     }
-  }, [user?.token, setPosts]);
+  }, [user]);
+
+  const copyUrl = (url: string) => {
+    navigator.clipboard.writeText(url);
+    toast.success("Link copied successfully!", { theme: "dark" });
+  };
 
   if (loading) {
     return (
@@ -47,41 +88,46 @@ export default function FetchPosts() {
     );
   }
 
-  if (posts.length === 0) {
-    return (
-      <h1 className="flex justify-center pt-10 font-semibold text-lg">
-        No posts available.
-      </h1>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
       {posts.map((post) => (
-        <div
-          key={post.id}
-          className="bg-card rounded-lg shadow-sm hover:shadow-lg transition-shadow"
-        >
-          <Link href={post.url} target="_blank" rel="noopener noreferrer">
-            <Image
-              src={post.image_url || "/computer.jpg"}
-              alt={post.title}
-              width={400}
-              height={200}
-              className="w-full h-48 object-cover rounded-t-lg"
-            />
-            <div className="p-4">
-              <h3 className="font-semibold text-lg line-clamp-2 mb-2">
-                {post.title}
-              </h3>
-              <p className="text-muted-foreground text-sm line-clamp-3 mb-2">
-                {post.description}
-              </p>
-              <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <span>{post.user_id}</span>
+        <div key={post.id}>
+          <Card className="bg-muted transition-transform transform hover:scale-105 hover:shadow-lg">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <UserAvatar image={post.user_id.profile_image} />
+                <h2>{post.user_id.username}</h2>
               </div>
-            </div>
-          </Link>
+              <CardTitle className="text-2xl font-bold">{post.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="px-1">
+              <p className="text-sm mb-2 px-5">{formatDate(post.created_at)}</p>
+              <figure className="px-4">
+                <Image
+                  src={post.image_url}
+                  width={350}
+                  height={350}
+                  className="w-full max-h-[200px] object-cover rounded-lg"
+                  alt="post_img"
+                />
+              </figure>
+            </CardContent>
+            <CardFooter className="flex justify-between items-center">
+              <div className="flex space-x-2 items-center">
+                <ArrowBigUp size={25} />
+                {post.vote > 0 && <span>{post.vote}</span>}
+              </div>
+              <div className="flex space-x-2 items-center">
+                <MessageSquare size={20} />
+                {post.comment_count > 0 && <span>{post.comment_count}</span>}
+              </div>
+              <LinkIcon
+                size={20}
+                onClick={() => copyUrl(post.url!)}
+                className="cursor-pointer"
+              />
+            </CardFooter>
+          </Card>
         </div>
       ))}
     </div>

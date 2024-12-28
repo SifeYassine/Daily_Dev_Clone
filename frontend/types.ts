@@ -26,7 +26,7 @@ type PostType = {
   created_at: string;
   vote: number;
   comment_count: number;
-  user_id: number;
+  user_id: UserType;
 };
 
 type ApiResponseType<T> = {
@@ -37,4 +37,11 @@ type ApiResponseType<T> = {
   next_page_url?: string;
   prev_cursor?: string;
   prev_page_url?: string;
+};
+
+type UserType = {
+  id: number;
+  email: string;
+  username: string;
+  profile_image: string;
 };

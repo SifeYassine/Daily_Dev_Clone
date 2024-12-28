@@ -30,47 +30,51 @@ export default function Login() {
     password: "",
   });
 
+  async function handleAuth() {
+    setLoading(true);
+    try {
+      const res = await myAxios.post(LOGIN_URL, authState);
+      const response = res.data;
+
+      if (res?.status === 200) {
+        toast.success(response.message, { theme: "dark" });
+
+        signIn("credentials", {
+          username: authState.username,
+          password: authState.password,
+          redirect: true,
+          callbackUrl: "/",
+        });
+      }
+    } catch (err: any) {
+      const errors = err.response?.data;
+
+      if (err.response?.status === 400) {
+        setErrors(errors.errors);
+      } else if (err.response?.status === 401) {
+        toast.error(errors.message, { theme: "dark" });
+      } else {
+        toast.error("Something went wrong! Please try again.", {
+          theme: "dark",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    setLoading(true);
-
-    myAxios
-      .post(LOGIN_URL, authState)
-      .then((res) => {
-        setLoading(false);
-        const response = res.data;
-
-        if (res?.status == 200) {
-          toast.success(response.message);
-
-          signIn("credentials", {
-            username: authState.username,
-            password: authState.password,
-            redirect: true,
-            callbackUrl: "/",
-          });
-        }
-      })
-      .catch((err) => {
-        setLoading(false);
-        const errors = err.response.data;
-
-        if (err?.status == 400) {
-          setErrors(errors.errors);
-        } else if (err?.status == 401) {
-          toast.error(errors.message);
-        } else {
-          toast.error("Something went wrong! Please try again.");
-        }
-      });
+    handleAuth();
   }
+
   return (
     <div>
       <TabsContent value="login">
         <Card>
           <CardHeader>
             <CardTitle>Login</CardTitle>
-            <CardDescription>Welcom back to Daily.dev</CardDescription>
+            <CardDescription>Welcome back to Daily.dev</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <form onSubmit={handleSubmit}>
@@ -94,9 +98,9 @@ export default function Login() {
                   type="password"
                   placeholder="Enter your password"
                   value={authState.password}
-                  onChange={(e) => {
-                    setAuthState({ ...authState, password: e.target.value });
-                  }}
+                  onChange={(e) =>
+                    setAuthState({ ...authState, password: e.target.value })
+                  }
                 />
                 <span className="text-red-500">{errors.password}</span>
               </div>

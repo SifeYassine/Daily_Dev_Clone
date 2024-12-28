@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title')->index();
             $table->text('description')->nullable();
-            $table->text('url');
+            $table->text('url')->nullable();
             $table->text('image_url');
             $table->unsignedInteger('comment_count')->default(0);
             $table->unsignedInteger('vote')->default(0);

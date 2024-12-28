@@ -74,7 +74,7 @@ export default function ProfileMenu() {
 
         if (res?.status == 200) {
           update({ profile_image: response.user.profile_image });
-          toast.success(response.message);
+          toast.success(response.message, { theme: "dark" });
           setEditProfileOpen(false);
         }
       })
@@ -84,9 +84,11 @@ export default function ProfileMenu() {
         setErrors(errs.errors);
 
         if (err?.status == 400) {
-          toast.error(errors.profile_image?.[0]);
+          toast.error(errors.profile_image?.[0], { theme: "dark" });
         } else {
-          toast.error("Something went wrong! Please try again.");
+          toast.error("Something went wrong! Please try again.", {
+            theme: "dark",
+          });
         }
       });
   }
