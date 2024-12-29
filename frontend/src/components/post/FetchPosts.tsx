@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useImmer } from "use-immer";
 import { toast } from "react-toastify";
 import {
   Card,
@@ -18,9 +19,19 @@ import { useSession } from "next-auth/react";
 import { CustomUser } from "@/app/api/auth/[...nextauth]/authOptions";
 import { formatDate } from "@/lib/utils";
 import { laraEcho } from "@/lib/echo.config";
+import ShowPost from "./ShowPost";
 
 export default function FetchPosts() {
-  const [posts, setPosts] = useState<PostType[]>([]);
+  const [posts, setPosts] = useImmer<ApiResponseType<PostType>>({
+    data: [],
+    path: "",
+    per_page: 0,
+    next_cursor: "",
+    next_page_url: "",
+    prev_cursor: "",
+    prev_page_url: "",
+  });
+
   const [loading, setLoading] = useState(true);
   const { data } = useSession();
   const user = data?.user as CustomUser;
@@ -37,7 +48,7 @@ export default function FetchPosts() {
           const response = res.data;
 
           if (res.status === 200) {
-            setPosts(response.posts.data);
+            setPosts(response.posts);
           }
         } catch {
           toast.error("Something went wrong! Please try again.", {
@@ -54,8 +65,11 @@ export default function FetchPosts() {
       const channel = laraEcho.channel("post-broadcast");
 
       channel.listen("PostBroadCastEvent", (event: any) => {
-        const post = event?.post as PostType;
-        setPosts((prevPosts) => [post, ...prevPosts]);
+        const post = event.post as PostType;
+
+        setPosts((posts) => {
+          posts.data = [post, ...posts.data];
+        });
       });
 
       laraEcho.connector.pusher.connection.bind("connected", () => {
@@ -90,44 +104,50 @@ export default function FetchPosts() {
 
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
-      {posts.map((post) => (
+      {posts.data.map((post) => (
         <div key={post.id}>
-          <Card className="bg-muted transition-transform transform hover:scale-105 hover:shadow-lg">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <UserAvatar image={post.user_id.profile_image} />
-                <h2>{post.user_id.username}</h2>
-              </div>
-              <CardTitle className="text-2xl font-bold">{post.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="px-1">
-              <p className="text-sm mb-2 px-5">{formatDate(post.created_at)}</p>
-              <figure className="px-4">
-                <Image
-                  src={post.image_url}
-                  width={350}
-                  height={350}
-                  className="w-full max-h-[200px] object-cover rounded-lg"
-                  alt="post_img"
+          <ShowPost post={post} key={post.id}>
+            <Card className="bg-muted transition-transform transform hover:scale-105 hover:shadow-lg">
+              <CardHeader>
+                <div className="flex items-center gap-x-2">
+                  <UserAvatar image={post.user_id.profile_image} />
+                  <h2>{post.user_id.username}</h2>
+                </div>
+                <CardTitle className="text-2xl font-bold">
+                  {post.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-1">
+                <p className="text-sm mb-2 px-5">
+                  {formatDate(post.created_at)}
+                </p>
+                <figure className="px-4">
+                  <Image
+                    src={post.image_url}
+                    width={350}
+                    height={350}
+                    className="w-full max-h-[200px] object-cover rounded-lg"
+                    alt="post_img"
+                  />
+                </figure>
+              </CardContent>
+              <CardFooter className="flex justify-between items-center">
+                <div className="flex space-x-2 items-center">
+                  <ArrowBigUp size={25} />
+                  {post.vote > 0 && <span>{post.vote}</span>}
+                </div>
+                <div className="flex space-x-2 items-center">
+                  <MessageSquare size={20} />
+                  {post.comment_count > 0 && <span>{post.comment_count}</span>}
+                </div>
+                <LinkIcon
+                  size={20}
+                  onClick={() => copyUrl(post.url!)}
+                  className="cursor-pointer"
                 />
-              </figure>
-            </CardContent>
-            <CardFooter className="flex justify-between items-center">
-              <div className="flex space-x-2 items-center">
-                <ArrowBigUp size={25} />
-                {post.vote > 0 && <span>{post.vote}</span>}
-              </div>
-              <div className="flex space-x-2 items-center">
-                <MessageSquare size={20} />
-                {post.comment_count > 0 && <span>{post.comment_count}</span>}
-              </div>
-              <LinkIcon
-                size={20}
-                onClick={() => copyUrl(post.url!)}
-                className="cursor-pointer"
-              />
-            </CardFooter>
-          </Card>
+              </CardFooter>
+            </Card>
+          </ShowPost>
         </div>
       ))}
     </div>

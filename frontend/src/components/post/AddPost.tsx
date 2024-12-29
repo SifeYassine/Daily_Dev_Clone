@@ -43,7 +43,7 @@ export default function AddPost() {
   const { data } = useSession();
   const user = data?.user as CustomUser;
 
-  async function handlePreviewAndSubmit(
+  async function handlePreviewAndPost(
     event?: React.FormEvent,
     type: "preview" | "submit" = "preview"
   ) {
@@ -94,8 +94,6 @@ export default function AddPost() {
       } catch (err: any) {
         const errors = err.response?.data;
 
-        console.log("errors", err);
-
         if (err?.status === 400) {
           setErrors(errors.errors);
         } else {
@@ -127,7 +125,7 @@ export default function AddPost() {
         <DialogHeader>
           <DialogTitle>Add Post</DialogTitle>
         </DialogHeader>
-        <form onSubmit={(e) => handlePreviewAndSubmit(e, "submit")}>
+        <form onSubmit={(e) => handlePreviewAndPost(e, "submit")}>
           {postState.image_url && (
             <Image
               src={postState.image_url}
@@ -138,7 +136,7 @@ export default function AddPost() {
             />
           )}
           <div className="mb-4">
-            <Label htmlFor="link">Link</Label>
+            <Label htmlFor="link">Article Link</Label>
             <Input
               id="link"
               type="url"
@@ -147,7 +145,7 @@ export default function AddPost() {
               onChange={(e) =>
                 setPostState({ ...postState, url: e.target.value })
               }
-              onBlur={() => handlePreviewAndSubmit(undefined, "preview")}
+              onBlur={() => handlePreviewAndPost(undefined, "preview")}
             />
             <span className="text-red-500">{errors.url}</span>
           </div>
@@ -161,7 +159,7 @@ export default function AddPost() {
               onChange={(e) =>
                 setPostState({ ...postState, image_url: e.target.value })
               }
-              onBlur={() => handlePreviewAndSubmit(undefined, "preview")}
+              onBlur={() => handlePreviewAndPost(undefined, "preview")}
             />
             <span className="text-red-500">{errors.image_url}</span>
           </div>

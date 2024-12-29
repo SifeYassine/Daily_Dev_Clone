@@ -39,7 +39,7 @@ class PostController extends Controller
             ]);
     
             // Load the user relationship
-            $post->load('user');
+            $post->load('user:id,username,profile_image');
     
             // Transform the user_id key to include the user's info
             if ($post->user) {
@@ -75,10 +75,9 @@ class PostController extends Controller
     public function index()
     {
         try {
-            $posts = Post::with('user')->cursorPaginate(10);
+            $posts = Post::with('user:id,username,profile_image')->cursorPaginate(10);
 
             // Tranform the user_id key to include the user's info
-
             $posts->transform(function ($post) {
                 if ($post->user_id) {
                     $post->user_id = [

@@ -30,7 +30,7 @@ type PostType = {
 };
 
 type ApiResponseType<T> = {
-  posts: Array<T>;
+  data: Array<T>;
   path: string;
   per_page: number;
   next_cursor: string;
