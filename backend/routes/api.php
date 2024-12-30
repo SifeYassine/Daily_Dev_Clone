@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\Post;
-use App\Events\PostBroadCastEvent;
 use App\Http\Controllers\api\auth\AuthController;
 use App\Http\Controllers\api\users\UserController;
 use App\Http\Controllers\api\posts\PostController;
@@ -30,15 +28,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Comment routes
     Route::post('comments/create', [CommentController::class, 'create']);
     Route::get('/comments/index/{postId}', [CommentController::class, 'index']);
-});
-
-// Broadcast routes
-Route::post("/test/channel", function (Request $request) {
-    $post = Post::select("*")->with("user")->orderBy("id", "desc")->first();
-    
-    PostBroadCastEvent::dispatch($post);
-
-    return response()->json([
-        "message" => "Data sent to client successfully"
-    ]);
 });

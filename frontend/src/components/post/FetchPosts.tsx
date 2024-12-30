@@ -61,16 +61,29 @@ export default function FetchPosts() {
 
       fetchPosts();
 
-      // Listen for real-time updates
+      // Listen for real-time posts
       const channel = laraEcho.channel("post-broadcast");
 
-      channel.listen("PostBroadCastEvent", (event: any) => {
-        const post = event.post as PostType;
+      channel
+        .listen("PostBroadCastEvent", (event: any) => {
+          const post = event.post as PostType;
 
-        setPosts((posts) => {
-          posts.data = [post, ...posts.data];
+          setPosts((posts) => {
+            posts.data = [post, ...posts.data];
+          });
+        })
+        .listen("CommentIncrement", (event: any) => {
+          // Find the post with the matching id in posts array, increment its comment_count value, then set the found post to the state
+          setPosts((posts) => {
+            const foundPost = posts.data.find(
+              (item) => item.id === event.post_id
+            );
+
+            if (foundPost) {
+              foundPost.comment_count += 1;
+            }
+          });
         });
-      });
 
       laraEcho.connector.pusher.connection.bind("connected", () => {
         console.log("Connected to Reverb server!");
@@ -124,9 +137,9 @@ export default function FetchPosts() {
                 <figure className="px-4">
                   <Image
                     src={post.image_url}
-                    width={350}
-                    height={350}
-                    className="w-full max-h-[200px] object-cover rounded-lg"
+                    width={400}
+                    height={400}
+                    className="w-full min-h-fit object-cover rounded-lg"
                     alt="post_img"
                   />
                 </figure>

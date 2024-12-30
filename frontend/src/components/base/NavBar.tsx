@@ -10,7 +10,7 @@ export default function NavBar() {
   return (
     <nav className="flex justify-between items-center p-2 border-b">
       <MobileSideBar />
-      <Image src="/logo.svg" width={120} height={120} alt="logo" />
+      <Image src="/logo.svg" width={150} height={150} alt="logo" />
 
       <SearchInput />
 

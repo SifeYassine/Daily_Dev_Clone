@@ -17,6 +17,13 @@ type PostStateType = {
   image_url?: string;
 };
 
+type UserType = {
+  id: number;
+  email: string;
+  username: string;
+  profile_image: string;
+};
+
 type PostType = {
   id: number;
   title: string;
@@ -29,6 +36,14 @@ type PostType = {
   user_id: UserType;
 };
 
+type CommentType = {
+  id: number;
+  post_id: number;
+  created_at: string;
+  comment: string;
+  user_id: UserType;
+};
+
 type ApiResponseType<T> = {
   data: Array<T>;
   path: string;
@@ -37,11 +52,4 @@ type ApiResponseType<T> = {
   next_page_url?: string;
   prev_cursor?: string;
   prev_page_url?: string;
-};
-
-type UserType = {
-  id: number;
-  email: string;
-  username: string;
-  profile_image: string;
 };

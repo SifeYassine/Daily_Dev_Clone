@@ -24,7 +24,7 @@ import {
 
 import { LogOut, UserRoundPen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import axios from "@/lib/axios.config";
+import myAxios from "@/lib/axios.config";
 import { LOGOUT_URL, UPDATE_PROFILE_URL } from "@/lib/apiEndPoints";
 import { CustomUser } from "@/app/api/auth/[...nextauth]/authOptions";
 import { useSession } from "next-auth/react";
@@ -35,28 +35,22 @@ import { Input } from "@/components/ui/input";
 
 export default function ProfileMenu() {
   const [logoutOpen, setLogoutOpen] = useState(false);
-  const [errors, setErrors] = useState({
-    profile_image: [],
-  });
-
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState<File | null>(null);
+  const [errors, setErrors] = useState({ profile_image: [] });
 
   const { data, update } = useSession();
   const user = data?.user as CustomUser;
 
   function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-
     if (file) {
-      console.log("the selected file", file);
       setImage(file);
     }
   }
 
-  function updateProfile(event: React.FormEvent) {
-    event.preventDefault();
+  async function handleProfileUpdate() {
     setLoading(true);
 
     const formData = new FormData();
@@ -64,64 +58,56 @@ export default function ProfileMenu() {
       formData.append("profile_image", image);
     }
 
-    axios
-      .post(UPDATE_PROFILE_URL, formData, {
+    try {
+      const res = await myAxios.post(UPDATE_PROFILE_URL, formData, {
         headers: { Authorization: `Bearer ${user.token}` },
-      })
-      .then((res) => {
-        setLoading(false);
-        const response = res.data;
-
-        if (res?.status == 200) {
-          update({ profile_image: response.user.profile_image });
-          toast.success(response.message, { theme: "dark" });
-          setEditProfileOpen(false);
-        }
-      })
-      .catch((err) => {
-        setLoading(false);
-        const errs = err.response.data;
-        setErrors(errs.errors);
-
-        if (err?.status == 400) {
-          toast.error(errors.profile_image?.[0], { theme: "dark" });
-        } else {
-          toast.error("Something went wrong! Please try again.", {
-            theme: "dark",
-          });
-        }
       });
+      const response = res.data;
+
+      if (res?.status === 200) {
+        update({ profile_image: response.user.profile_image });
+        toast.success(response.message, { theme: "dark" });
+        setEditProfileOpen(false);
+      }
+    } catch (err: any) {
+      const errors = err.response?.data;
+
+      if (err.response?.status === 400) {
+        setErrors(errors.errors);
+      } else {
+        toast.error("Something went wrong! Please try again.", {
+          theme: "dark",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    handleProfileUpdate();
   }
 
   async function logoutUser() {
-    axios
-      .post(
+    try {
+      const res = await myAxios.post(
         LOGOUT_URL,
         {},
-        { headers: { Authorization: `Bearer ${user.token}` } }
-      )
-      .then((res) => {
-        const response = res.data;
-
-        if (res?.status == 200) {
-          signOut({
-            redirect: true,
-            callbackUrl: "/login",
-          });
-          toast.success(response.message);
+        {
+          headers: { Authorization: `Bearer ${user.token}` },
         }
-      })
-      .catch((err) => {
-        setLoading(false);
-        const errors = err.response.data;
+      );
 
-        if (err?.status == 400) {
-          setErrors(errors.errors);
-        } else {
-          toast.error("Something went wrong! Please try again.");
-        }
-      });
+      if (res?.status === 200) {
+        signOut({ redirect: true, callbackUrl: "/login" });
+        toast.success(res.data.message);
+      }
+    } catch {
+      toast.error("Something went wrong! Please try again.");
+    }
   }
+
   return (
     <div>
       <Dialog open={logoutOpen} onOpenChange={setLogoutOpen}>
@@ -129,8 +115,8 @@ export default function ProfileMenu() {
           <DialogHeader>
             <DialogTitle>Are you absolutely sure?</DialogTitle>
             <DialogDescription>
-              This action will expire your session & to access home page you
-              need to login again.
+              This action will expire your session & to access the home page you
+              need to log in again.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2">
@@ -149,7 +135,7 @@ export default function ProfileMenu() {
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
           </DialogHeader>
-          <form onSubmit={updateProfile}>
+          <form onSubmit={handleSubmit}>
             <div className="mb-2">
               <Label htmlFor="profile">Profile Image</Label>
               <Input
@@ -158,6 +144,11 @@ export default function ProfileMenu() {
                 accept="image/png,image/jpeg,image/jpg,image/webp,image/svg"
                 onChange={handleImageChange}
               />
+              <span className="text-red-500">
+                {errors?.profile_image.length > 1
+                  ? errors.profile_image[1]
+                  : errors.profile_image[0]}
+              </span>
             </div>
 
             <div className="mb-2">

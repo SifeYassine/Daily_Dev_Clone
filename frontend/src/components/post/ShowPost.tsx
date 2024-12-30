@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import Image from "next/image";
 
@@ -11,6 +13,7 @@ import {
 import UserAvatar from "@/components/common/UserAvatar";
 import { formatDate } from "@/lib/utils";
 import AddComment from "../comment/AddComment";
+import FetchComments from "../comment/FetchComments";
 
 export default function ShowPost({
   children,
@@ -24,7 +27,7 @@ export default function ShowPost({
     <div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
-        <DialogContent className="w-full md:min-w-[700px] max-h-screen custom-scrollbar">
+        <DialogContent className="w-full min-w-fit max-h-[95vh]  custom-scrollbar">
           <DialogHeader>
             <DialogTitle>Show Post</DialogTitle>
           </DialogHeader>
@@ -42,8 +45,9 @@ export default function ShowPost({
               alt="post image"
               className="w-full rounded-lg object-cover my-5"
             />
-            <p>{post.description}</p>
+            <p className="text-lg my-8">{post.description}</p>
             <AddComment post={post} />
+            <FetchComments post={post} />
           </div>
         </DialogContent>
       </Dialog>

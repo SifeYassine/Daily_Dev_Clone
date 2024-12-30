@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\api\comments;
 
 use App\Models\Comment;
+use App\Events\CommentBroadCastEvent;
+use App\Events\CommentIncrement;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -51,6 +53,13 @@ class CommentController extends Controller
              // Remove the user & post keys from the comment
              unset($comment->user);
              unset($comment->post);
+
+            // Broadcast the comment
+            CommentBroadCastEvent::dispatch($comment);
+
+            // Broadcast the comment increment
+            CommentIncrement::dispatch($comment->post_id);
+
 
 
             return response()->json([

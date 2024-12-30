@@ -119,7 +119,7 @@ export default function AddPost() {
         </div>
       </DialogTrigger>
       <DialogContent
-        className="max-h-screen custom-scrollbar"
+        className="max-h-[95vh] custom-scrollbar"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -129,8 +129,8 @@ export default function AddPost() {
           {postState.image_url && (
             <Image
               src={postState.image_url}
-              width={450}
-              height={450}
+              width={400}
+              height={400}
               className="w-full object-contain rounded-xl my-2"
               alt="image"
             />
