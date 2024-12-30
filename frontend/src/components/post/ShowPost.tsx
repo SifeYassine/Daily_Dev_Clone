@@ -31,7 +31,7 @@ export default function ShowPost({
           <DialogHeader>
             <DialogTitle>Show Post</DialogTitle>
           </DialogHeader>
-          <div>
+          <div className="max-w-[600px]">
             <div className="flex items-center gap-x-2 my-5">
               <UserAvatar image={post.user_id.profile_image} />
               <h2>{post.user_id.username}</h2>

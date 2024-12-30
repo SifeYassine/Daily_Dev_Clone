@@ -116,33 +116,38 @@ export default function FetchPosts() {
   }
 
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 p-5">
       {posts.data.map((post) => (
-        <div key={post.id}>
-          <ShowPost post={post} key={post.id}>
-            <Card className="bg-muted transition-transform transform hover:scale-105 hover:shadow-lg">
+        <div
+          key={post.id}
+          className="grid [grid-template-rows:subgrid] [grid-row:span_3]"
+        >
+          <ShowPost post={post}>
+            <Card className="grid [grid-template-rows:auto_1fr_auto] h-full bg-muted transition-transform transform hover:scale-105 hover:shadow-lg">
               <CardHeader>
-                <div className="flex items-center gap-x-2">
+                <div className="flex items-center gap-x-2 mb-3">
                   <UserAvatar image={post.user_id.profile_image} />
                   <h2>{post.user_id.username}</h2>
                 </div>
-                <CardTitle className="text-2xl font-bold">
+                <CardTitle className="text-2xl font-bold line-clamp-2">
                   {post.title}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="px-1">
-                <p className="text-sm mb-2 px-5">
-                  {formatDate(post.created_at)}
-                </p>
-                <figure className="px-4">
-                  <Image
-                    src={post.image_url}
-                    width={400}
-                    height={400}
-                    className="w-full min-h-fit object-cover rounded-lg"
-                    alt="post_img"
-                  />
-                </figure>
+              <CardContent className="px-1 grid grid-rows-1 h-full">
+                <div className="self-end">
+                  <p className="text-sm mb-2 px-5">
+                    {formatDate(post.created_at)}
+                  </p>
+                  <figure className="px-4">
+                    <Image
+                      src={post.image_url}
+                      width={400}
+                      height={400}
+                      className="w-full min-h-fit object-cover rounded-lg"
+                      alt="post_img"
+                    />
+                  </figure>
+                </div>
               </CardContent>
               <CardFooter className="flex justify-between items-center">
                 <div className="flex space-x-2 items-center">
