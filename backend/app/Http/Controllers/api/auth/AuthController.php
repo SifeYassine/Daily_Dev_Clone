@@ -4,10 +4,13 @@ namespace App\Http\Controllers\api\auth;
 
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use App\Mail\VerificationCodeMail;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Validator;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -20,6 +23,7 @@ class AuthController extends Controller
                 'email' => 'required|string|max:255|unique:users,email',
                 'password' => 'required|string|min:6|confirmed',
                 'profile_image' => 'nullable|string|max:255',
+                'email_verification_code' => 'nullable|string|max:10'
             ]);
 
             if ($validateUser->fails()) {
@@ -36,6 +40,14 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password),
                 'profile_image' => $request->profile_image
             ]);
+
+            // Generate and send verification code
+            $verificationCode = Str::upper(Str::random(6));
+            $email = $user->email;
+            $user->email_verification_code = $verificationCode;
+            $user->save();
+
+            Mail::to($email)->send(new VerificationCodeMail($verificationCode));
 
             return response()->json([
                 'status' => 200,
